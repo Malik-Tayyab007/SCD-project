@@ -1,0 +1,30 @@
+!pip install anvil-uplink
+
+import anvil.server
+
+anvil.server.connect("server_MWEHXN74F2SNT5VMIL3KDV5N-NBHXIRIHM2CS2LC5")
+
+from google.colab import files
+uploaded =  files.upload()
+
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import warnings
+warnings.filterwarnings('ignore')
+
+df = pd.read_csv('KDD99_chi2_5.csv')
+
+X = df.drop('labels', axis = 1)
+y = df['labels']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+rf = RandomForestClassifier()
+clf = RandomForestClassifier(n_estimators = 100)
+clf.fit(X_train, y_train)
+
+@anvil.server.callable
+def predict_ids(duration, src_bytes, dst_bytes, count,srv_count):
+  classification = clf.predict([[duration, src_bytes, dst_bytes, count,srv_count]])
+  return classification
